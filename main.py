@@ -2,7 +2,7 @@
 from core.utils import start_spark_session, bronze_schema
 from core.api import get_max_page, get_open_brewery_api
 from core.constants import items_per_page
-from core.storage import load_data_to_azure_sql_db_table
+from core.storage import load_data_to_azure_sql_db_table, load_backup_parque_file_to_azure_account_storage
 from pyspark.sql import Row
 import toml
 import os
@@ -47,13 +47,17 @@ if __name__ == '__main__':
     
     sucessful_loading_db = load_data_to_azure_sql_db_table(all_data_spark, azure_db, "bronze_api_brewery_dev")
 
-    # if sucessful_loading_db:
+    if sucessful_loading_db:
 
-    #     azure_account_storage = {
-    #         'storage_account_name': config['azure-account-storage']['storage_account_name'],
-    #         'storage_account_key': config['azure-account-storage']['storage_account_key'],
-    #         'container_name': config['azure-account-storage']['container_name']
-    #     }
+        azure_account_storage = {
+            'storage_account_name': config['azure-account-storage']['storage_account_name'],
+            'storage_account_key': config['azure-account-storage']['storage_account_key'],
+            'container_name': config['azure-account-storage']['container_name'] 
+        }
+
+        sucessful_loading_parquet = load_backup_parque_file_to_azure_account_storage(spark, all_data_spark, azure_account_storage,'silver')
+
+
         
 
     
