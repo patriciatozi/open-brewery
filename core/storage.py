@@ -15,12 +15,12 @@ def load_data_to_azure_sql_db_table(dataframe, credentials, table_name):
 
     return True
 
-def load_backup_parque_file_to_azure_account_storage(spark, dataframe, credentials):
+def load_backup_parque_file_to_azure_account_storage(spark, dataframe, credentials, layer):
 
-    output_path = f"wasbs://{credentials['container_name']}@{credentials['storage_account_name']}.blob.core.windows.net/output.parquet"
+    output_path = f"wasbs://{credentials['container_name']}@{credentials['storage_account_name']}.blob.core.windows.net/{layer}"
 
     spark.conf.set(f"fs.azure.account.key.{credentials['storage_account_name']}.blob.core.windows.net", credentials['storage_account_key'])
 
-    dataframe.write.parquet(output_path, mode='overwrite')
+    dataframe.write.partitionBy('country', 'city').parquet(output_path, mode='overwrite')
 
     print(f"DataFrame written to {output_path}")
