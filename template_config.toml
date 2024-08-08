@@ -1,0 +1,17 @@
+[spark-config]
+spark_path = ""
+hadoop_path = ""
+
+[open-brewery-db]
+main_url = "https://api.openbrewerydb.org/v1/breweries"
+
+[azure-sql-databases]
+server = ""
+database = ""
+username = ""
+password = ""
+
+[azure-account-storage]
+storage_account_name = ""
+storage_account_key = ""
+container_name = ""
