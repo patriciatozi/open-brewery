@@ -20,12 +20,11 @@ bronze_schema = StructType([
                 StructField("street", StringType(), True)
                 ])
 
-def start_spark_session(spark_path, hadoop_path):
+def start_spark_session():
 
     spark = SparkSession.builder \
-            .appName("BreweriesData") \
-            .config("spark.driver.extraClassPath", spark_path) \
-            .config("spark.jars.packages", hadoop_path) \
-            .getOrCreate()
+            .appName("BreweriesData").getOrCreate()
+        #     .config("spark.driver.extraClassPath", spark_path) \
+        #     .config("spark.jars.packages", hadoop_path) \
 
     return spark
