@@ -1,86 +1,61 @@
-<div align="center">
-     <img src="assets/images/obdb-og.png" width="300px">
-</div>
+# Airflow and Spark: Running Spark jobs on Airflow (Docker-based solution)
 
-<!-- <h4 align="center">This is a model README for repositories on Github. </h4> -->
-<br>
+Here in this repository, we have designed a simple ETL process that extract data from an API and we are transforming this data using Spark and loading this data into an AWS S3 bucket. We running this batch processes using Airflow by Spark job submit Operator in Airflow. All the processes described here are happening on a Docker containers. You can look at this [repository](https://github.com/yTek01/apache-airflow-spark) if you are interested in local deployment as opposed to Docker-based solution. 
 
-<p align="center">
-    <img src="https://img.shields.io/github/last-commit/yagopeixinho/readmeTemplate?color=008ebd">
-    <img src="https://img.shields.io/github/languages/count/yagopeixinho/readmeTemplate?color=b3ecff">
-    <!-- <img src="https://img.shields.io/netlify/a56c2296-3139-4d5a-8fcd-b32b52f0b6a5?color=69bbc9"> -->
-    <img src="https://img.shields.io/github/license/yagopeixinho/vouAoMercado?color=00b6d6">
-</p>
+![alt text](https://github.com/yTek01/docker-spark-airflow/blob/main/images/index.png)
 
-<p align="center">
-  <a href="#about-the-project">About</a> • 
-  <a href="#project-notes">Project notes</a> •
-  <a href="#gallery">Gallery</a> •
-  <a href="#getting-started">Getting started</a> •
-  <a href="#contributing">Contributing</a> •
-  <a href="#contacting">Contacting</a> •
-  <a href="#license">License</a>
-</p>
+## Things to do;
 
-<!-- <img src="assets/images/sampleImage2.png" width="100%"> -->
+*  Clone the Github repository 
+*  Build the Spark and the Airflow image
+*  Create your dags, logs, plugins folder
+*  Create your environment variable
+*  Start and run the Spark and Airflow containers 
+*  Run your Spark jobs to confirm if the Spark job completed successfully before moving it to Airflow 
+*  Design the Airflow DAG to trigger and schedule the Spark jobs.
 
-<br>
+## Clone the Github repository.
+```bash
+git clone https://github.com/yTek01/docker-spark-airflow.git
+```
 
-## About the Project
+## Build the Spark image.
+```bash
+docker build -f Dockerfile.Spark . -t spark-air
+```
 
-### Open Brewery DB
-Open Brewery DB is a free dataset and API with public information on breweries, cideries, brewpubs, and bottleshops. The goal of Open Brewery DB is to maintain an open-source, community-driven dataset and provide a public API for brewery-related data.
+## Build the Airflow image.
+```bash
+docker build -f Dockerfile.Airflow . -t airflow-spark
+```
 
-For this project, we are using the following endpoint, which lists all available breweries:
-`https://api.openbrewerydb.org/v1/breweries`
+## Create your dags, logs, plugins folder.
+```bash
+mkdir ./dags ./logs ./plugins
+echo -e "AIRFLOW_UID=$(id -u)\nAIRFLOW_GID=0" > .env
+```
 
-Source: [https://www.openbrewerydb.org/](https://www.openbrewerydb.org/)
+## Your environment variable would look like this.
+```bash
+AIRFLOW_UID=33333
+AIRFLOW_GID=0
+AWS_ACCESS_KEY=XXXXXXXXXXXXXXXXXXXX
+AWS_SECRET_KEY=XXXXXXXXXXXXXXXXXXXX
+```
 
-### Data Architecture
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean at lacinia mauris. Donec consequat ligula sapien. Fusce vitae vestibulum diam. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec suscipit dapibus ligula, non maximus augue tempor a. Etiam sed dolor magna. Praesent rhoncus urna eu ipsum accumsan dignissim.
-
-## Project Notes
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean at lacinia mauris. Donec consequat ligula sapien. Fusce vitae vestibulum diam.
-- Lorem ipsum dolor sit amet, _consectetur adipiscing elit_. Aenean at lacinia mauris. Donec consequat _ligula sapien_. Fusce vitae vestibulum diam.
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-
-
-## Gallery
-
-<div align="center">
-
-### Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-<img src="assets/images/sampleImage1.png">
-
-<br>
-
-### Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-<img src="assets/images/sampleImage2.png">
-
-</div>
-
-<br>
-
-## Getting Started?
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean at lacinia mauris. Donec consequat ligula sapien. Fusce vitae vestibulum diam. 
-~~~bash
-# Lorem ipsum dolor sit amet
-$ git clone git@github.com:yagopeixinho/readmeTemplate.git
-~~~
+## Start and run the Spark and Airflow containers.
+```bash
+docker-compose -f docker-compose.Spark.yaml -f docker-compose.Airflow.yaml up -d
+```
+When all the services all started successfully, now go to http://localhost:8080/ to check that Airflow has started successfully, and http://localhost:8090/ that Spark is up and running. 
 
 
-## Contributing
+* Run your Spark jobs to confirm if the Spark job completed successfully before moving it to Airflow.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean at lacinia mauris.
+```bash
+docker exec -it <Spark-Worker-Contianer-name> \
+    spark-submit --master spark://XXXXXXXXXXXXXX:7077 \
+    spark_etl_script_docker.py
+```
 
-## Contacting
-
-- 📬 Lorem ipsum dolor sit amet: loremipsumdolor@sitamet.com
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean at lacinia mauris. Donec consequat ligula sapien. Fusce vitae vestibulum diam. [Lacinia mauris](https://github.com/yagopeixinho/yagopeixinho/blob/master/README.md)
-
-## License
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. [Lorem ipsumm dolor siti](https://github.com/yagopeixinho/vouAoMercado/blob/master/LICENSE)
-
--------
-Template by [@yagopeixinho](https://github.com/yagopeixinho)
+If all is fine with the setup, i.e. the Spark job completed successfully, then move forward to scheduling the Spark job on Airflow. 
