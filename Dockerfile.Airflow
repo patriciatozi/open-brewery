@@ -1,0 +1,37 @@
+# Stage 1: Base image with JDK and Ant installed
+FROM debian:bullseye-slim as builder
+
+USER root
+
+# Install OpenJDK-11 and Ant
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gosu \
+    openjdk-11-jdk \
+    ant && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Stage 2: Build final image with Airflow
+FROM apache/airflow:2.9.3-python3.8
+
+USER root
+
+# Copy JDK and Ant from the builder stage
+COPY --from=builder /usr/lib/jvm/java-11-openjdk-amd64 /usr/lib/jvm/java-11-openjdk-amd64
+COPY --from=builder /usr/bin/ant /usr/bin/ant
+
+# Set JAVA_HOME environment variable
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+
+USER airflow
+
+# Copy and install Python dependencies
+COPY ./requirements.txt /
+RUN pip install -r /requirements.txt
+
+# Install Airflow Celery provider
+RUN pip install apache-airflow-providers-celery
+
+# Copy DAGs to the appropriate directory
+COPY --chown=airflow:root ./dags /opt/airflow/dags
